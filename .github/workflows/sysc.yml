@@ -1,0 +1,46 @@
+name: Sync upstream
+
+on:
+  schedule:
+    - cron: '1 16 1 * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0
+      - name: Backup files
+        run: |
+          tar -czvf backup.tar.gz .github/
+      - name: Prepare git configuration
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@users.noreply.github.com"
+      - name: Hard reset to upstream changes
+        run: |
+          git remote add upstream https://github.com/TonyJiangWJ/mimotion.git
+          git fetch upstream
+          git checkout master
+          git reset --hard upstream/master
+      - name: Restore files from backup
+        run: |
+          tar -xzvf backup.tar.gz
+          git rm -r .github/workflows/star.yml
+          git add .github/
+          current=`TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S'`
+          git commit -m "[${current}] sync upstream by ${{ github.event_name }}"
+      - name: Force push to origin
+        run: |
+          git push origin master --force
+          sleep 33
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2.0.6
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 30
+          keep_minimum_runs: 30
