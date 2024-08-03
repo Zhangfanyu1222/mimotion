@@ -2,7 +2,7 @@ name: Brush steps
 
 on:
   schedule:
-    - cron: '56 2,5,11,14 * * *'
+    - cron: '1 2,5,8,11,14 * * *'
   workflow_dispatch:
 
 jobs:
