@@ -1,8 +1,8 @@
-name: 刷步数
+name: Brush steps
 
 on:
   schedule:
-    - cron: '39 1,4,7,10,12,23 * * *'
+    - cron: '25 2,5,8,11 * * *'
   workflow_dispatch:
 
 jobs:
@@ -11,31 +11,18 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout codes
-        uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.PAT }} #此处PAT需要申请，教程详见：README
+        uses: actions/checkout@v4.1.1
       - name: Update system and install zsh
         run: |
           sudo -E apt-get -qq update
           sudo -E apt-get install zsh -y
-          
-      - name: 初始化Python
-        uses: actions/setup-python@v6
+      - name: Initializing Python
+        uses: actions/setup-python@v5.0.0
         with:
-          python-version: "3.10"
-          
-      - name: 开始
+          python-version: 3.8
+      - name: Start
         env:
             CONFIG: ${{ secrets.CONFIG }}
-            AES_KEY: ${{ secrets.AES_KEY }}
         run: |
-          pip3 install requests pytz pycryptodome
+          pip3 install requests pytz
           python3 main.py
-
-      - name: persist tokens
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@users.noreply.github.com
-          git add .
-          git commit -m "persist tokens trigger by ${{ github.event_name }}"
-          git push origin master
